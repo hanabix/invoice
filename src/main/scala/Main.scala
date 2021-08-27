@@ -31,9 +31,9 @@ object Main {
       }
     }
 
-    rows.zipWithIndex.foreach {
-      case (fs, 0) => println(fs.map(_.name).mkString("\t"))
-      case (fs, _) => println(fs.map(_.value.getOrElse("N/A")).mkString("\t"))
+    rows.zipWithIndex.foreach { case (fs, i) =>
+      if (i == 0) println(fs.map(_.name).mkString("\t"))
+      println(fs.map(_.value.getOrElse("N/A")).mkString("\t"))
     }
   }
 
