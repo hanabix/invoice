@@ -17,7 +17,7 @@ object Main {
       Selection(
         Area(0, 400, 85, 600),
         List(
-          Field("发票号码", Capture("发票号码\\D+(\\d+)".r)),
+          Field("发票号码", Capture("发票号码\\D+(\\d+)".r, "\"%s\"")),
           Field("开票日期", Capture("开票日期\\D+(\\d{4})\\D*(\\d{2})\\D*(\\d{2})\\D*".r, "%s-%s-%s"))
         )
       ),
@@ -32,8 +32,8 @@ object Main {
     }
 
     rows.zipWithIndex.foreach { case (fs, i) =>
-      if (i == 0) println(fs.map(_.name).mkString("\t"))
-      println(fs.map(_.value.getOrElse("N/A")).mkString("\t"))
+      if (i == 0) println(fs.map(_.name).mkString(", "))
+      println(fs.map(_.value.getOrElse("N/A")).mkString(", "))
     }
   }
 
