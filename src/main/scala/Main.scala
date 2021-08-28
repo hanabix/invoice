@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument
 
 import invoice.tabula._
 import mainargs._
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 object Main {
 
@@ -17,7 +18,7 @@ object Main {
       Selection(
         Area(0, 400, 85, 600),
         List(
-          Field("发票号码", Capture("发票号码\\D+(\\d+)".r, "\"%s\"")),
+          Field("发票号码", Capture("发票号码\\D+(\\d+)".r)),
           Field("开票日期", Capture("开票日期\\D+(\\d{4})\\D*(\\d{2})\\D*(\\d{2})\\D*".r, "%s-%s-%s"))
         )
       ),
@@ -31,10 +32,27 @@ object Main {
       }
     }
 
-    rows.zipWithIndex.foreach { case (fs, i) =>
-      if (i == 0) println(fs.map(_.name).mkString(", "))
-      println(fs.map(_.value.getOrElse("N/A")).mkString(", "))
+    using(new XSSFWorkbook()) { b =>
+      val sheet = b.createSheet()
+
+      rows.zipWithIndex.foreach { case (fs, i) =>
+        if (i == 0) {
+          val head = sheet.createRow(i)
+          fs.zipWithIndex.foreach { case (f, n) =>
+            head.createCell(n).setCellValue(f.name)
+          }
+        }
+
+        val row = sheet.createRow(i + 1)
+        fs.zipWithIndex.foreach { case (f, n) =>
+          val cell = row.createCell(n)
+          f.value.foreach(cell.setCellValue)
+        }
+        scala.Console.err.println(fs.map(_.value.getOrElse("N/A")).mkString(", "))
+      }
+      using(new FileOutputStream((path / "summary.xlsx").toIO))(b.write)
     }
+
   }
 
   def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args)
