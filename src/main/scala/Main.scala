@@ -55,7 +55,7 @@ object Main {
 
   }
 
-  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args)
+  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args.toSeq)
 
   private def using[A <: Closeable, B](a: A)(func: A => B): B = {
     try func(a)
