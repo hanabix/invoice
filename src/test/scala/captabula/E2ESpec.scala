@@ -1,11 +1,13 @@
 package captabula
 
-import org.scalatest.wordspec.AnyWordSpec
-import dsl._
-import tabula._
-import cats.data.Reader
 import java.io.InputStream
-import java.io.File
+
+import cats.data.Reader
+
+import captabula.dsl._
+import captabula.tabula._
+
+import org.scalatest.wordspec.AnyWordSpec
 
 class E2ESpec extends AnyWordSpec {
   "Capture text" when {
