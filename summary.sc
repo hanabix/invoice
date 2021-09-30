@@ -15,10 +15,7 @@ import tabula._
 import dsl._
 
 
-case class Invoice(no: String, code: String, created: String, pwt: Double)
-
-
-
+case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
 
 @main
 def main(path: os.Path = os.pwd) = {
@@ -33,6 +30,12 @@ def main(path: os.Path = os.pwd) = {
     regex"(\d+\.\d{2})$pwt" = total
   } yield Invoice(no, code, s"$year-$m0$m1-$d0$d1", pwt.toDouble)
 
+
+  val (total, csv) = files.foldLeft((0.0d, List.empty[Invoice])) {
+    case ((sum, invoices), f) => 
+      val i = reader.run(f)  
+      (sum + i.`价税合计`, i :: invoices)
+  }
   files.map(reader.run).foreach(println)
   // using(new XSSFWorkbook()) { b =>
   //   val sheet = b.createSheet()
