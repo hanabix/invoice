@@ -10,8 +10,8 @@ import captabula.tabula._
 import org.scalatest.wordspec.AnyWordSpec
 
 class E2ESpec extends AnyWordSpec {
-  "Capture text" when {
-    "read from a  pdf" should {
+  "Capture invoice" when {
+    "read from a pdf" should {
       "by rect" in {
         val in = classOf[E2ESpec].getClassLoader.getResourceAsStream("test.pdf")
         val reader: Reader[InputStream, Invoice] = for {

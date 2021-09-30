@@ -6,7 +6,7 @@ package object captabula {
     def regex: UnanchoredRegex = sc.parts.mkString.r.unanchored
   }
 
-  trait ReaderFactory[A, B] extends (A => Reader[B, String])
+  type ReaderFactory[A, B] = A => Reader[B, String]
 
   private[captabula] case class Rect(top: Number, left: Number, width: Number, height: Number)
   private[captabula] case class Sheet(row: Int, column: Int)

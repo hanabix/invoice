@@ -10,10 +10,9 @@ import scala.jdk.CollectionConverters._
 
 import cats.data._
 
+import org.apache.pdfbox.pdmodel.PDDocument
 import technology.tabula._
 import technology.tabula.extractors._
-
-import org.apache.pdfbox.pdmodel.PDDocument
 
 object tabula {
 
