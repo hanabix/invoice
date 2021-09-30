@@ -1,19 +1,12 @@
 // import $ivy.`com.github.zhongl::invoice:0.0.4`
 
-import $ivy.`org.apache.poi:poi-ooxml:5.0.0`, org.apache.poi.xssf.usermodel.XSSFWorkbook
-
-
-
-import $ivy.`com.github.zhongl::captabula:0.0.3+3-79e78cb3+20211001-0005-SNAPSHOT`
 import java.io.File
 import java.io.FilenameFilter
 
-import cats.data.Reader
+import $ivy.`com.github.zhongl::captabula:0.0.3+3-79e78cb3+20211001-0005-SNAPSHOT`, cats.data.Reader, captabula._, tabula._, dsl._
 
-import captabula._
-import tabula._
-import dsl._
-
+import $ivy.`org.apache.poi:poi-ooxml:5.0.0`, org.apache.poi.xssf.usermodel.XSSFWorkbook
+import $ivy.`com.chuusai::shapeless:2.3.3`
 
 case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
 
