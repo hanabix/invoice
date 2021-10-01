@@ -1,38 +1,31 @@
-import cats._
-import cats.data.Reader
-
 import shapeless._
-import ops.record._
+import shapeless.ops.record._
 
 import org.apache.poi.xssf.usermodel._
 
 package object xssf {
-  type Append[A, B]         = A => Reader[B, Unit]
-  type AppendRow[A]         = Append[A, XSSFRow]
-  type AppendSheet[F[_], A] = Append[F[A], XSSFSheet]
+  type AppendRow[A] = XSSFRow => A => Unit
 
-  def appendCell[A](f: A => XSSFCell => Unit): AppendRow[A] = a => Reader { row => f(a)(row.createCell(math.max(0, row.getLastCellNum))) }
+  def appendCell[A](f: XSSFCell => A => Unit): AppendRow[A] = r => a => f(r.createCell(math.max(0, r.getLastCellNum)))(a)
 
-  implicit val appendHNil: AppendRow[HNil]       = _ => Reader { _ => }
-  implicit val appendString: AppendRow[String]   = appendCell { v => c => c.setCellValue(v) }
-  implicit val appendBoolean: AppendRow[Boolean] = appendCell { v => c => c.setCellValue(v) }
-  implicit val appendDouble: AppendRow[Double]   = appendCell { v => c => c.setCellValue(v) }
-  implicit val appendSymbol: AppendRow[Symbol]   = appendCell { v => c => c.setCellValue(v.name) }
+  implicit val appendHNil: AppendRow[HNil]       = _ => _ => ()
+  implicit val appendString: AppendRow[String]   = appendCell { c => v => c.setCellValue(v) }
+  implicit val appendBoolean: AppendRow[Boolean] = appendCell { c => v => c.setCellValue(v) }
+  implicit val appendDouble: AppendRow[Double]   = appendCell { c => v => c.setCellValue(v) }
+  implicit val appendSymbol: AppendRow[Symbol]   = appendCell { c => v => c.setCellValue(v.name) }
 
   implicit def appendHList[H, T <: HList](implicit
       appendHCell: Lazy[AppendRow[H]],
       appendTCell: AppendRow[T]
-  ): AppendRow[H :: T] = { case h :: t =>
-    for {
-      _ <- appendHCell.value.apply(h)
-      _ <- appendTCell.apply(t)
-    } yield ()
+  ): AppendRow[H :: T] = r => { case h :: t =>
+    appendHCell.value(r)(h)
+    appendTCell(r)(t)
   }
 
   implicit def appendRow[A, R](implicit
       gen: Generic.Aux[A, R],
       appendR: AppendRow[R]
-  ): AppendRow[A] = a => appendR.apply(gen.to(a))
+  ): AppendRow[A] = r => a => appendR(r)(gen.to(a))
 
   trait Header[A]
 
@@ -40,17 +33,15 @@ package object xssf {
       gen: LabelledGeneric.Aux[A, R],
       keys: Keys.Aux[R, K],
       appendK: AppendRow[K]
-  ): AppendRow[Header[A]] = _ => appendK.apply(keys())
+  ): AppendRow[Header[A]] = r => _ => appendK(r)(keys())
 
-  implicit def appendMonad[F[_]: Traverse, A: AppendRow]: AppendSheet[F, A] = fa => {
-    import cats.syntax.traverse._
-
-    val readers = Functor[F].map(fa) { a =>
-      val reader                                   = implicitly[AppendRow[A]].apply(a)
-      val createRow: XSSFSheet => cats.Id[XSSFRow] = s => s.createRow(math.max(0, s.getLastRowNum))
-      reader.compose[XSSFSheet, XSSFRow](createRow)
+  implicit class SheetOps(val sheet: XSSFSheet) extends AnyVal {
+    def appendHeader[A](implicit ap: AppendRow[Header[A]]): Unit = {
+      ap(row)(new Header[A] {})
     }
-    readers.sequence.map(_ => ())
-  }
 
+    def appendRow[A](a: A)(implicit ap: AppendRow[A]): Unit = ap(row)(a)
+
+    private def row = sheet.createRow(sheet.getLastRowNum + 1)
+  }
 }
