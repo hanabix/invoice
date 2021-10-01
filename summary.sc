@@ -30,23 +30,4 @@ def main(path: os.Path = os.pwd) = {
     (sum + i.`价税合计`, i :: invoices)
   }
   
-  // using(new XSSFWorkbook()) { b =>
-  //   val sheet = b.createSheet()
-  //   val header = sheet.createRow(0)
-
-  //   for ( (s, i) <- List("发票代码", "发票号码", "开票日期","价税合计").zipWithIndex ) {
-  //     header.createCell(i).setCellValue(s)
-  //   }
-
-  //   records.zipWithIndex.foreach {
-  //     case (r, i) =>
-  //       val row = sheet.createRow(i + 1)
-  //       row.createCell(0).setCellValue(r.c.value)
-  //       row.createCell(1).setCellValue(r.n.value)
-  //       row.createCell(2).setCellValue(r.t.value)
-  //       row.createCell(3).setCellValue(r.p.value)
-  //   }
-
-  //   using(new FileOutputStream((path / f"summary_$total%.2f.xlsx").toIO))(b.write)
-  // }
 }
