@@ -1,3 +1,3 @@
 [![Publish](https://github.com/hanabix/captabula/actions/workflows/sbt-release.yml/badge.svg)](https://github.com/hanabix/captabula/actions/workflows/sbt-release.yml) [![Maven Central](https://img.shields.io/maven-central/v/com.github.zhongl/captabula_2.13)](https://search.maven.org/artifact/com.github.zhongl/captabula_2.13)
 
-**Captabula is scala base on [tabular-java](https://github.com/tabulapdf/tabula-java).**
+**Captabula is scala lib base on [tabular-java](https://github.com/tabulapdf/tabula-java).**
