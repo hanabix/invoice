@@ -10,7 +10,6 @@ import cats.data.Kleisli
 import org.apache.pdfbox.pdmodel.PDDocument
 import technology.tabula._
 import technology.tabula.extractors._
-import technology.tabula.detectors.SpreadsheetDetectionAlgorithm
 
 object tabula {
 
@@ -40,6 +39,7 @@ object tabula {
     def sheet(row: Int, column: Int): String = {
       val tables = new SpreadsheetExtractionAlgorithm().extract(p)
       // TODO fix no table found.
+      // import technology.tabula.detectors.SpreadsheetDetectionAlgorithm
       // val rects  = new SpreadsheetDetectionAlgorithm().detect(p)
       // println(s"------ ${rects.asScala}")
       tables.asScala.headOption.map(_.getCell(row, column).getText()).getOrElse("")

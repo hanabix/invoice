@@ -1,4 +1,3 @@
-
 import $ivy.`com.github.zhongl::captabula:0.0.4`, captabula._, tabula._, dsl._, xssf._
 
 import java.io.File
@@ -8,8 +7,9 @@ import java.io.Closeable
 
 case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
 
-def using[A <: Closeable, B](a: A)(f: A => B): B = try f(a)
-finally a.close()
+def using[A <: Closeable, B](a: A)(f: A => B): B =
+  try f(a)
+  finally a.close()
 
 @main
 def main(path: os.Path = os.pwd) = {
