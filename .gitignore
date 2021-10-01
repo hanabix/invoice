@@ -2,5 +2,7 @@
 .metals/
 .bloop/
 .bsp/
+.ammonite/
 target/
 metals.sbt
+*.worksheet.sc
