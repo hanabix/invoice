@@ -24,9 +24,7 @@ object tabula {
   }
 
   implicit def inputStreamIndexer(implicit i: Indexer[PDDocument]) = new Indexer[InputStream] {
-    def apply(indices: List[Int]) = {
-      i.apply(indices).compose(in => List(PDDocument.load(in)))
-    }
+    def apply(indices: List[Int]) = i.apply(indices).compose(in => List(PDDocument.load(in)))
   }
 
   private def asCapture(p: Page) = new Capture {
