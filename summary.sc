@@ -1,12 +1,8 @@
-// import $ivy.`com.github.zhongl::invoice:0.0.4`
+
+import $ivy.`com.github.zhongl::captabula:0.0.4`, captabula._, tabula._, dsl._, xssf._
 
 import java.io.File
 import java.io.FilenameFilter
-
-import $ivy.`com.github.zhongl::captabula:0.0.3+11-f874a94e+20211001-2014-SNAPSHOT`, captabula._, tabula._, dsl._, xssf._
-
-import $ivy.`org.apache.poi:poi-ooxml:5.0.0`, org.apache.poi.xssf.usermodel.XSSFWorkbook
-import $ivy.`com.chuusai::shapeless:2.3.3`
 import java.nio.file.Files
 import java.io.Closeable
 
