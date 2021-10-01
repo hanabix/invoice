@@ -5,6 +5,8 @@ import java.io.FilenameFilter
 import java.nio.file.Files
 import java.io.Closeable
 
+import org.apache.poi.xssf.usermodel._
+
 case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
 
 def using[A <: Closeable, B](a: A)(f: A => B): B =
