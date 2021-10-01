@@ -1,14 +1,11 @@
 package captabula
 
-import java.io.File
 import java.io.InputStream
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.Collections
 
 import scala.jdk.CollectionConverters._
 
-import cats.data._
+import cats.data.Kleisli
 
 import org.apache.pdfbox.pdmodel.PDDocument
 import technology.tabula._
@@ -16,51 +13,34 @@ import technology.tabula.extractors._
 
 object tabula {
 
-  trait PageResource[A] {
-    def using(a: A)(f: Page => String): String
+  implicit def documentIndexer = new Indexer[PDDocument] {
+    def apply(indices: List[Int]): Transform[PDDocument, Capture] = Kleisli { doc =>
+      try {
+        val ii    = indices.map(Integer.valueOf).asJava
+        val pages = new ObjectExtractor(doc).extract(ii).asScala.toList
+        pages.map(asCapture)
+      } finally doc.close()
+    }
   }
 
-  object PageResource {
-    def apply[A](implicit ps: PageResource[A]) = ps
-
-    implicit def documentResource = new PageResource[PDDocument] {
-      def using(doc: PDDocument)(f: Page => String) = {
-        try { f(new ObjectExtractor(doc).extract(1)) }
-        finally doc.close()
-      }
+  implicit def inputStreamIndexer(implicit i: Indexer[PDDocument]) = new Indexer[InputStream] {
+    def apply(indices: List[Int]) = {
+      i.apply(indices).compose(in => List(PDDocument.load(in)))
     }
-
-    implicit def inputStreamResource(implicit ps: PageResource[PDDocument]) = new PageResource[InputStream] {
-      def using(a: InputStream)(f: Page => String) = {
-        try ps.using(PDDocument.load(a))(f)
-        finally a.close()
-      }
-    }
-
-    implicit def pathResource(implicit ps: PageResource[InputStream]) = new PageResource[Path] {
-      def using(a: Path)(f: Page => String): String = ps.using(Files.newInputStream(a))(f)
-    }
-
-    implicit def fileResource(implicit ps: PageResource[Path]) = new PageResource[File] {
-      def using(a: File)(f: Page => String) = ps.using(a.toPath())(f)
-    }
-
   }
 
-  implicit def extractByRect[A: PageResource]: ReaderFactory[Rect, A] = { case Rect(top, left, width, height) =>
-    reader { page =>
+  private def asCapture(p: Page) = new Capture {
+    def rect(top: Number, left: Number, width: Number, height: Number): String = {
       val r      = new Rectangle(top.floatValue(), left.floatValue(), width.floatValue(), height.floatValue())
-      val tables = new BasicExtractionAlgorithm(Collections.emptyList()).extract(page.getArea(r))
+      val tables = new BasicExtractionAlgorithm(Collections.emptyList()).extract(p.getArea(r))
       tables.asScala.headOption.map(_.getRows().asScala.map(_.get(0).getText()).mkString).getOrElse("")
     }
-  }
 
-  implicit def extractBySheet[A: PageResource]: ReaderFactory[Sheet, A] = { case Sheet(row, column) =>
-    reader { page =>
-      val tables = new SpreadsheetExtractionAlgorithm().extract(page)
+    def sheet(row: Int, column: Int): String = {
+      val tables = new SpreadsheetExtractionAlgorithm().extract(p)
       tables.asScala.headOption.map(_.getCell(row, column).getText()).getOrElse("")
     }
+
   }
 
-  private def reader[A: PageResource](f: Page => String): Reader[A, String] = Reader { a => PageResource[A].using(a)(f) }
 }

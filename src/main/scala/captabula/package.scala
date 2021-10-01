@@ -1,20 +1,41 @@
 import scala.util.matching.UnanchoredRegex
-import cats.data._
+import cats.data.Kleisli
+import java.nio.file.Path
+import java.io.File
+import java.io.InputStream
+import java.nio.file.Files
 
 package object captabula {
   implicit class UnanchoredRegexString(val sc: StringContext) extends AnyVal {
     def regex: UnanchoredRegex = sc.parts.mkString.r.unanchored
   }
 
-  type ReaderFactory[A, B] = A => Reader[B, String]
+  trait Capture {
+    def rect(top: Number, left: Number, width: Number, height: Number): String
+    def sheet(row: Int, column: Int): String
+  }
 
-  private[captabula] case class Rect(top: Number, left: Number, width: Number, height: Number)
-  private[captabula] case class Sheet(row: Int, column: Int)
+  type Transform[A, B] = Kleisli[List, A, B]
+
+  type Indexer[A] = List[Int] => Transform[A, Capture]
+  object Indexer {
+    def apply[A](implicit i: Indexer[A]): Indexer[A] = i
+  }
+
+  implicit def fileIndexer(implicit i: Indexer[Path]) = new Indexer[File] {
+    def apply(indices: List[Int]) = {
+      i.apply(indices).compose(f => List(f.toPath()))
+    }
+  }
+
+  implicit def pathIndexer(implicit i: Indexer[InputStream]) = new Indexer[Path] {
+    def apply(indices: List[Int]) = {
+      i.apply(indices).compose(p => List(Files.newInputStream(p)))
+    }
+  }
 
   object dsl {
-    def rect[A](top: Number, left: Number, width: Number, height: Number)(implicit f: ReaderFactory[Rect, A]) = f(Rect(top, left, width, height))
-
-    def sheet[A](row: Int, column: Int)(implicit f: ReaderFactory[Sheet, A]) = f(Sheet(row, column))
+    def load[A: Indexer](indices: Int*): Transform[A, Capture] = Indexer[A].apply(indices.toList)
   }
 
 }

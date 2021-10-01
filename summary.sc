@@ -3,7 +3,7 @@
 import java.io.File
 import java.io.FilenameFilter
 
-import $ivy.`com.github.zhongl::captabula:0.0.3+3-79e78cb3+20211001-0005-SNAPSHOT`, cats.data.Reader, captabula._, tabula._, dsl._
+import $ivy.`com.github.zhongl::captabula:0.0.3+8-34829a16+20211001-1221-SNAPSHOT`, cats.data.Reader, captabula._, tabula._, dsl._
 
 import $ivy.`org.apache.poi:poi-ooxml:5.0.0`, org.apache.poi.xssf.usermodel.XSSFWorkbook
 import $ivy.`com.chuusai::shapeless:2.3.3`
@@ -13,23 +13,20 @@ case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期
 @main
 def main(path: os.Path = os.pwd) = {
   def filter = new FilenameFilter { def accept(dir: File, name: String) = name.endsWith(".pdf") }
-  val f = path.toIO
-  val files = if(f.isFile()) List(f) else f.listFiles(filter).toList
+  val f      = path.toIO
+  val files  = if (f.isFile()) List(f) else f.listFiles(filter).toList
 
-  val reader: Reader[File, Invoice] = for {
-    basic <- rect[File](top = 0, left = 400, width = 200, height = 85)
-    regex"(\d{12})$no\D+(\d{8})$code\D+(\d{4})$year\D+(\d)$m0\D*(\d)$m1\D+(\d)$d0\D*(\d)$d1" = basic
-    total <- sheet[File](row = 2, column = 1)
-    regex"(\d+\.\d{2})$pwt" = total
-  } yield Invoice(no, code, s"$year-$m0$m1-$d0$d1", pwt.toDouble)
+  val transform: Transform[File, Invoice] = for {
+    capture <- load[File](1)
+    regex"(\d{12})$no\D+(\d{8})$code\D+(\d{4})$year\D+(\d{2})$month\D+(\d{2})$day" = capture.rect(0, 400, 200, 85)
+    regex"(\d+\.\d{2})$pwt"                                                        = capture.sheet(2, 1)
+  } yield Invoice(no, code, s"$year-$month-$day", pwt.toDouble)
 
-
-  val (total, csv) = files.foldLeft((0.0d, List.empty[Invoice])) {
-    case ((sum, invoices), f) => 
-      val i = reader.run(f)  
-      (sum + i.`价税合计`, i :: invoices)
+  val (total, csv) = files.foldLeft((0.0d, List.empty[Invoice])) { case ((sum, invoices), f) =>
+    val i = transform.run(f)
+    (sum + i.head.`价税合计`, i.head :: invoices)
   }
-  files.map(reader.run).foreach(println)
+  files.map(transform.run).foreach(println)
   // using(new XSSFWorkbook()) { b =>
   //   val sheet = b.createSheet()
   //   val header = sheet.createRow(0)
@@ -50,4 +47,3 @@ def main(path: os.Path = os.pwd) = {
   //   using(new FileOutputStream((path / f"summary_$total%.2f.xlsx").toIO))(b.write)
   // }
 }
-
