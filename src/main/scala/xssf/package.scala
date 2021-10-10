@@ -36,7 +36,7 @@ package object xssf {
   ): AppendRow[Header[A]] = r => _ => appendK(r)(keys())
 
   implicit class SheetOps(val sheet: XSSFSheet) extends AnyVal {
-    def appendHeader[A](implicit ap: AppendRow[Header[A]]): Unit = ap(row)(new Header[A] {}) 
+    def appendHeader[A](implicit ap: AppendRow[Header[A]]): Unit = ap(row)(new Header[A] {})
 
     def appendRow[A](a: A)(implicit ap: AppendRow[A]): Unit = ap(row)(a)
 
