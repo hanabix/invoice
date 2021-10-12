@@ -17,9 +17,8 @@ class E2ESpec extends AnyWordSpec {
         } yield Invoice(no, code, s"$year-$month-$day")).run
 
         val in      = classOf[E2ESpec].getClassLoader.getResourceAsStream("test.pdf")
-        val invoice = in.as[List, Page].read[Invoice].take(1)
-
-        assert(invoice == List(Invoice("111111111111", "11111111", "2011-11-11")))
+        val invoice = in.as[List, Page].read[Invoice].head
+        assert(invoice == Invoice("111111111111", "11111111", "2011-11-11"))
       }
     }
   }
