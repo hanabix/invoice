@@ -11,7 +11,7 @@ package object captabula {
   }
 
   trait Marshaller[A] {
-    def write[B](b: B)(implicit f: Reader[A, B => Unit]): Unit
+    def write[B](b: B)(implicit f: B => A): Unit
   }
 
   trait Rect {

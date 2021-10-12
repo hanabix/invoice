@@ -3,8 +3,6 @@ package captabula
 import captabula.dsl._
 import captabula.tabula._
 
-import cats.data.Reader
-
 import org.scalatest.wordspec.AnyWordSpec
 import technology.tabula.Page
 
