@@ -17,7 +17,7 @@ implicit val captureInvoice: Page => Invoice = (for {
   basic <- rect(0, 400, 200, 85)
   total <- rect(275, 400, 200, 25)
   regex"(\d{12})$code\D+(\d{8})$no\D+(\d{4})$year\D*(\d{2})$month\D*(\d{2})$day" = basic.replaceAll("\\s", "")
-  regex"(\d+\.\d{2})$pwt"                                                         = total
+  regex"(\d+\.\d{2})$pwt"                                                        = total
 } yield Invoice(code, no, s"$year-$month-$day", pwt.toDouble)).run
 
 def list(dir: os.Path, suffix: String): List[File] = {
@@ -38,7 +38,8 @@ def main(dir: os.Path = os.pwd) = {
     i
   }
 
-  val sum = invoices.map(_.`价税合计`).sum
-
-  (dir / f"summary-$sum%.2f.xlsx").toNIO.as[Excel].write(invoices)
+  if (invoices.nonEmpty) {
+    val sum = invoices.map(_.`价税合计`).sum
+    (dir / f"summary-$sum%.2f.xlsx").toNIO.as[Excel].write(invoices)
+  }
 }
