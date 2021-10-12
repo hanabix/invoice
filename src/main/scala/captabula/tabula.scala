@@ -1,48 +1,74 @@
 package captabula
 
+import java.io.File
 import java.io.InputStream
 import java.util.Collections
 
 import scala.jdk.CollectionConverters._
 
-import cats.data.Kleisli
+import cats.Id
+import cats.data.Reader
 
 import org.apache.pdfbox.pdmodel.PDDocument
-import technology.tabula._
 import technology.tabula.extractors._
+import technology.tabula.Page
+import technology.tabula.ObjectExtractor
+import technology.tabula.Rectangle
 
 object tabula {
 
-  implicit def documentIndexer = new Indexer[PDDocument] {
-    def apply(indices: List[Int]): Transform[PDDocument, Capture] = Kleisli { doc =>
-      try {
-        val ii    = indices.map(Integer.valueOf).asJava
-        val pages = new ObjectExtractor(doc).extract(ii).asScala.toList
-        pages.map(asCapture)
-      } finally doc.close()
+  trait Kernel[F[_], A] {
+    def apply[B](a: A)(f: Page => B): F[B]
+  }
+
+  implicit def unmarshallerOfPage[F[_], A](implicit k: Kernel[F, A]): A => Unmarshaller[F, Page] = a =>
+    new Unmarshaller[F, Page] {
+      override def read[B](implicit f: Page => B): F[B] = k(a)(f)
+    }
+
+  implicit val kernelForAllPages: Kernel[List, PDDocument] = new Kernel[List, PDDocument] {
+    override def apply[B](a: PDDocument)(f: Page => B): List[B] = {
+      new ObjectExtractor(a).extract().asScala.map(f).toList
     }
   }
 
-  implicit def inputStreamIndexer(implicit i: Indexer[PDDocument]) = new Indexer[InputStream] {
-    def apply(indices: List[Int]) = i.apply(indices).compose(in => List(PDDocument.load(in)))
+  implicit val kernelForHeadPage: Kernel[Id, PDDocument] = new Kernel[Id, PDDocument] {
+    override def apply[B](a: PDDocument)(f: Page => B): Id[B] = {
+      f(new ObjectExtractor(a).extract(1))
+    }
   }
 
-  private def asCapture(p: Page) = new Capture {
-    def rect(top: Number, left: Number, width: Number, height: Number): String = {
-      val r      = new Rectangle(top.floatValue(), left.floatValue(), width.floatValue(), height.floatValue())
-      val tables = new BasicExtractionAlgorithm(Collections.emptyList()).extract(p.getArea(r))
+  implicit def kernelInputStream[F[_]](implicit k: Kernel[F, PDDocument]): Kernel[F, InputStream] = new Kernel[F, InputStream] {
+    def apply[B](a: InputStream)(f: Page => B): F[B] = {
+      val doc = PDDocument.load(a)
+      try k.apply(doc)(f)
+      finally doc.close
+    }
+  }
+
+  implicit def kernelFile[F[_]](implicit k: Kernel[F, PDDocument]): Kernel[F, File] = new Kernel[F, File] {
+    def apply[B](a: File)(f: Page => B): F[B] = {
+      val doc = PDDocument.load(a)
+      try k.apply(doc)(f)
+      finally doc.close
+    }
+  }
+
+  implicit val rectPageCapture: Capture[Rect, Page] = r =>
+    Reader { p =>
+      val re     = new Rectangle(r.top.floatValue(), r.left.floatValue(), r.width.floatValue(), r.height.floatValue())
+      val tables = new BasicExtractionAlgorithm(Collections.emptyList()).extract(p.getArea(re))
       tables.asScala.headOption.map(_.getRows().asScala.map(_.get(0).getText()).mkString).getOrElse("")
     }
 
-    def sheet(row: Int, column: Int): String = {
+  implicit val cellPageCapture: Capture[Cell, Page] = c =>
+    Reader { p =>
       val tables = new SpreadsheetExtractionAlgorithm().extract(p)
       // TODO fix no table found.
       // import technology.tabula.detectors.SpreadsheetDetectionAlgorithm
       // val rects  = new SpreadsheetDetectionAlgorithm().detect(p)
       // println(s"------ ${rects.asScala}")
-      tables.asScala.headOption.map(_.getCell(row, column).getText()).getOrElse("")
+      tables.asScala.headOption.map(_.getCell(c.row, c.column).getText()).getOrElse("")
     }
-
-  }
 
 }
