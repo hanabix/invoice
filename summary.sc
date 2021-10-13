@@ -1,4 +1,4 @@
-import $ivy.`com.github.zhongl::captabula:0.0.5`, captabula._, tabula._, dsl._, xssf._
+import $ivy.`com.github.zhongl::captabula:0.0.6`, captabula._, tabula._, dsl._, xssf._
 
 import java.io.File
 import java.io.FilenameFilter
@@ -13,8 +13,11 @@ import java.nio.file.Path
 
 @main
 def main(dir: os.Path = os.pwd) = {
+  sys.props.addOne("org.slf4j.simpleLogger.defaultLogLevel" -> "error")
+
   val invoices = list(dir, ".pdf").map { f =>
     val i = f.as[Id, Page].read[Invoice]
+    println(s"$i -> $f")
     rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
     i
   }
@@ -25,7 +28,7 @@ def main(dir: os.Path = os.pwd) = {
   }
 }
 
-case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
+case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double) extends Prehead
 
 implicit val captureInvoice: Page => Invoice = (for {
   basic <- rect(0, 400, 200, 85)
