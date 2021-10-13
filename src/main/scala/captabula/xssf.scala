@@ -28,7 +28,7 @@ object xssf {
   implicit val appendDouble: AppendRow[Double]   = appendCell { c => v => c.setCellValue(v) }
   implicit val appendSymbol: AppendRow[Symbol]   = appendCell { c => v => c.setCellValue(v.name) }
 
-  implicit def appendHList[H, T <: HList](implicit
+  implicit def appendHListRow[H, T <: HList](implicit
       appendHCell: Lazy[AppendRow[H]],
       appendTCell: AppendRow[T]
   ): AppendRow[H :: T] = {
@@ -38,12 +38,13 @@ object xssf {
     }
   }
 
-  implicit def appendRow[A, R](implicit
+  implicit def appendARow[A, R](implicit
       gen: Generic.Aux[A, R],
       f: AppendRow[R]
   ): AppendRow[A] = a => r => f(gen.to(a))(r)
 
-  implicit def useXSSFWorkbook[F[_], A, R <: HList, K <: HList](implicit
+
+  implicit def appendABookWithHead[F[_], A, R <: HList, K <: HList](implicit
       @nowarn gen: LabelledGeneric.Aux[A, R],
       keys: Keys.Aux[R, K],
       f: AppendSheet[F[A]],
@@ -55,7 +56,7 @@ object xssf {
     f(fa)(s)
   }
 
-  implicit def sheet[F[_]: Functor, A](implicit f: AppendRow[A]): AppendSheet[F[A]] = { fa => s =>
+  implicit def appendASheet[F[_]: Functor, A](implicit f: AppendRow[A]): AppendSheet[F[A]] = { fa => s =>
     Functor[F].map(fa)(a => f(a)(s.createRow(s.getLastRowNum + 1)))
   }
 
