@@ -20,6 +20,8 @@ object xssf {
   type AppendRow[A]   = Append[A, XSSFRow]
   type AppendSheet[A] = Append[A, XSSFSheet]
 
+  trait Prehead
+
   def appendCell[A](f: XSSFCell => A => Unit): AppendRow[A] = a => r => f(r.createCell(math.max(0, r.getLastCellNum)))(a)
 
   implicit val appendHNil: AppendRow[HNil]       = _ => _ => ()
@@ -43,8 +45,9 @@ object xssf {
       f: AppendRow[R]
   ): AppendRow[A] = a => r => f(gen.to(a))(r)
 
+  implicit def appendABook[F[_], A](implicit f: AppendSheet[F[A]]): F[A] => Excel = { fa => b => f(fa)(b.createSheet()) }
 
-  implicit def appendABookWithHead[F[_], A, R <: HList, K <: HList](implicit
+  implicit def appendAPreheadBook[F[_], A <: Prehead, R <: HList, K <: HList](implicit
       @nowarn gen: LabelledGeneric.Aux[A, R],
       keys: Keys.Aux[R, K],
       f: AppendSheet[F[A]],
