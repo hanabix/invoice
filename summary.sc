@@ -11,6 +11,20 @@ import org.apache.poi.xssf.usermodel._
 import technology.tabula.Page
 import java.nio.file.Path
 
+@main
+def main(dir: os.Path = os.pwd) = {
+  val invoices = list(dir, ".pdf").map { f =>
+    val i = f.as[Id, Page].read[Invoice]
+    rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
+    i
+  }
+
+  if (invoices.nonEmpty) {
+    val sum = invoices.map(_.`价税合计`).sum
+    (dir / f"summary-$sum%.2f.xlsx").toNIO.as[Excel].write(invoices)
+  }
+}
+
 case class Invoice(`发票代码`: String, `发票号码`: String, `开票日期`: String, `价税合计`: Double)
 
 implicit val captureInvoice: Page => Invoice = (for {
@@ -28,18 +42,4 @@ def list(dir: os.Path, suffix: String): List[File] = {
 
 def rename(p: Path, name: String): Unit = {
   Files.move(p, p.resolveSibling(name))
-}
-
-@main
-def main(dir: os.Path = os.pwd) = {
-  val invoices = list(dir, ".pdf").map { f =>
-    val i = f.as[Id, Page].read[Invoice]
-    rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
-    i
-  }
-
-  if (invoices.nonEmpty) {
-    val sum = invoices.map(_.`价税合计`).sum
-    (dir / f"summary-$sum%.2f.xlsx").toNIO.as[Excel].write(invoices)
-  }
 }
