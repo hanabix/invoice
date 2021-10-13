@@ -3,13 +3,11 @@ import $ivy.`com.github.zhongl::captabula:0.0.6`, captabula._, tabula._, dsl._, 
 import java.io.File
 import java.io.FilenameFilter
 import java.nio.file.Files
-import java.io.Closeable
+import java.nio.file.Path
 
 import cats.Id
 
-import org.apache.poi.xssf.usermodel._
 import technology.tabula.Page
-import java.nio.file.Path
 
 @main
 def main(dir: os.Path = os.pwd) = {
