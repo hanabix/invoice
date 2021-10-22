@@ -13,12 +13,17 @@ import technology.tabula.Page
 def main(dir: os.Path = os.pwd) = {
   sys.props.addOne("org.slf4j.simpleLogger.defaultLogLevel" -> "error")
 
-  val invoices = list(dir, ".pdf").map { f =>
-    print(f)
-    val i = f.as[Id, Page].read[Invoice]
-    println(s" -> $i")
-    rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
-    i
+  val invoices = list(dir, ".pdf").flatMap { f =>
+    try {
+      val i = f.as[Id, Page].read[Invoice]
+      rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
+      println(s"$f -> $i")
+      List(i)
+    } catch {
+      case x: Throwable => 
+        println(s"$f -> ${x.getMessage()}")
+        List.empty[Invoice]
+    }
   }
 
   if (invoices.nonEmpty) {
