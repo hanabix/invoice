@@ -24,9 +24,9 @@ lazy val root = (project in file(".")).settings(
     "technology.tabula" % "tabula"             % "1.0.5",
     "org.typelevel"    %% "cats-core"          % "2.6.1",
     "org.apache.poi"    % "poi-ooxml"          % "5.0.0",
-    "com.chuusai"      %% "shapeless"          % "2.3.3",
-    "org.scalactic"    %% "scalactic"          % "3.2.9",
-    "org.scalatest"    %% "scalatest-wordspec" % "3.2.9" % Test,
+    "com.chuusai"      %% "shapeless"          % "2.3.7",
+    "org.scalactic"    %% "scalactic"          % "3.2.10",
+    "org.scalatest"    %% "scalatest-wordspec" % "3.2.10" % Test,
     "org.scalamock"    %% "scalamock"          % "5.1.0" % Test
   )
 )
