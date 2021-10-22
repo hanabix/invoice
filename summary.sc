@@ -1,4 +1,4 @@
-import $ivy.`com.github.zhongl::captabula:0.0.6`, captabula._, tabula._, dsl._, xssf._
+import $ivy.`com.github.zhongl::captabula:0.0.7`, captabula._, tabula._, dsl._, xssf._
 
 import java.io.File
 import java.io.FilenameFilter
