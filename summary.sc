@@ -14,8 +14,9 @@ def main(dir: os.Path = os.pwd) = {
   sys.props.addOne("org.slf4j.simpleLogger.defaultLogLevel" -> "error")
 
   val invoices = list(dir, ".pdf").map { f =>
+    print(f)
     val i = f.as[Id, Page].read[Invoice]
-    println(s"$i -> $f")
+    println(s" -> $i")
     rename(f.toPath(), f"${i.`发票代码`}-${i.`发票号码`}-${i.`价税合计`}%.2f.pdf")
     i
   }
