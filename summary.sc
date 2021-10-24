@@ -20,7 +20,7 @@ def main(dir: os.Path = os.pwd) = {
       println(s"$f -> $i")
       List(i)
     } catch {
-      case x: Throwable => 
+      case x: Throwable =>
         println(s"$f -> ${x.getMessage()}")
         List.empty[Invoice]
     }
