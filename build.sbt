@@ -22,7 +22,7 @@ lazy val root = (project in file(".")).settings(
   resolvers += "Artima Maven Repository" at "https://repo.artima.com/releases",
   libraryDependencies ++= Seq(
     "technology.tabula" % "tabula"             % "1.0.5",
-    "org.typelevel"    %% "cats-core"          % "2.6.1",
+    "org.typelevel"    %% "cats-core"          % "2.7.0",
     "org.apache.poi"    % "poi-ooxml"          % "5.1.0",
     "com.chuusai"      %% "shapeless"          % "2.3.7",
     "org.scalactic"    %% "scalactic"          % "3.2.10",
