@@ -23,9 +23,9 @@ lazy val root = (project in file(".")).settings(
   libraryDependencies ++= Seq(
     "technology.tabula" % "tabula"             % "1.0.5",
     "org.typelevel"    %% "cats-core"          % "2.7.0",
-    "org.apache.poi"    % "poi-ooxml"          % "5.1.0",
+    "org.apache.poi"    % "poi-ooxml"          % "5.2.0",
     "com.chuusai"      %% "shapeless"          % "2.3.8",
-    "org.scalactic"    %% "scalactic"          % "3.2.10",
+    "org.scalactic"    %% "scalactic"          % "3.2.11",
     "org.scalatest"    %% "scalatest-wordspec" % "3.2.10" % Test,
     "org.scalamock"    %% "scalamock"          % "5.2.0"  % Test
   )
