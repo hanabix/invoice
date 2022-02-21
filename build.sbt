@@ -25,7 +25,7 @@ lazy val root = (project in file(".")).settings(
     "org.typelevel"    %% "cats-core"          % "2.7.0",
     "org.apache.poi"    % "poi-ooxml"          % "5.1.0",
     "com.chuusai"      %% "shapeless"          % "2.3.7",
-    "org.scalactic"    %% "scalactic"          % "3.2.10",
+    "org.scalactic"    %% "scalactic"          % "3.2.11",
     "org.scalatest"    %% "scalatest-wordspec" % "3.2.11" % Test,
     "org.scalamock"    %% "scalamock"          % "5.2.0"  % Test
   )
