@@ -16,6 +16,7 @@ lazy val root = (project in file(".")).settings(
   scalaVersion      := "2.13.8",
   semanticdbEnabled := true,
   semanticdbVersion := scalafixSemanticdb.revision,
+  coverageEnabled := true,
   scalafmtOnCompile := true,
   scalacOptions += "-deprecation",
   scalacOptions += "-Wunused",
